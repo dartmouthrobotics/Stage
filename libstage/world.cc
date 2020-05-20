@@ -634,6 +634,14 @@ bool World::Update()
   // handle the zeroth queue synchronously in the main thread
   ConsumeQueue(0);
 
+  // AQL: Moved  before sensors update as it creates an issue
+  // with the ranger calculations which uses the ground truth,
+  // but odom is not updated.
+  // update the position of all position models based on their velocity
+  // while sensor models are running in other threads
+  FOR_EACH (it, active_velocity)
+    (*it)->Move();
+
   // handle all the remaining queues asynchronously in worker threads
   pthread_mutex_lock(&sync_mutex);
   threads_working = worker_threads;
@@ -641,11 +649,6 @@ bool World::Update()
   // puts( "main thread signalling workers" );
   pthread_cond_broadcast(&threads_start_cond);
   pthread_mutex_unlock(&sync_mutex);
-
-  // update the position of all position models based on their velocity
-  // while sensor models are running in other threads
-  FOR_EACH (it, active_velocity)
-    (*it)->Move();
 
   pthread_mutex_lock(&sync_mutex);
   // wait for all the last update job to complete - it will

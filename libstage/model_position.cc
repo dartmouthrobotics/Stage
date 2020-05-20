@@ -562,10 +562,7 @@ void ModelPosition::Move(void)
     SetStall(true);
   } else {
     SetStall(false);
-  }
-  
-  // Ensure that also odometry is updated after motion.
-  ModelPosition::Update();
+  } 
 }
 
 void ModelPosition::Startup(void)
